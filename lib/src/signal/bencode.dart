@@ -1,10 +1,6 @@
 library hetimartc.bencode;
-import 'dart:async' as async;
 import 'dart:typed_data' as data;
-import 'dart:html' as html;
 import 'dart:convert' as convert;
-import 'package:chrome/chrome_app.dart' as chrome;
-import 'dart:js' as js;
 import 'package:hetimacore/hetimacore.dart' as hetima;
 
 class Bencode {

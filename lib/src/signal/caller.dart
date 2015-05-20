@@ -5,9 +5,6 @@ import 'dart:core' as core;
 import 'dart:typed_data' as data;
 import 'dart:html' as html;
 import 'dart:convert' as convert;
-import 'package:chrome/chrome_app.dart' as chrome;
-import 'package:hetimacore/hetimacore.dart' as hetima;
-import 'dart:js' as js;
 import './bencode.dart';
 
 /**
