@@ -140,7 +140,7 @@ class Caller {
 
     core.Map dataConstrain = null;//{"reliable": false};
     _datachannel = _connection.createDataChannel("message", dataConstrain);
-  ///  _datachannel.binaryType = "arraybuffer";
+    _datachannel.binaryType = "arraybuffer";
     _setChannelEvent(_datachannel);
 
     return this;

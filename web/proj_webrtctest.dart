@@ -6,25 +6,44 @@ import 'package:hetimartc/hetimartc.dart';
 Caller callerA = new Caller("callerA");
 Caller callerB = new Caller("callerB");
 
+html.TextAreaElement callerAMessage = new html.Element.textarea();
+html.TextAreaElement callerBMessage = new html.Element.textarea();
+
 void main() {
   print("" + Uuid.createUUID());
   html.Element startButton = new html.Element.html('<input id="offerbutton" type="button" value="start"> ');
-  html.Element sendButton = new html.Element.html('<input id="send" type="button" value="send hello"> ');
+  html.Element sendAButton = new html.Element.html('<input id="send" type="button" value="send hello A->B"> ');
+  html.Element sendBButton = new html.Element.html('<input id="send" type="button" value="send hello B->A"> ');
 
   html.document.body.children.add(new html.Element.br());
   html.document.body.children.add(startButton);
   html.document.body.children.add(new html.Element.br());
-  html.document.body.children.add(sendButton);
+  html.document.body.children.add(sendAButton);
   html.document.body.children.add(new html.Element.br());
-
+  html.document.body.children.add(sendBButton);
+  html.document.body.children.add(new html.Element.br());
+  html.document.body.children.add(new html.Element.html("<div>PeerA Message</div>"));
+  html.document.body.children.add(new html.Element.br());
+  html.document.body.children.add(callerAMessage);
+  html.document.body.children.add(new html.Element.br());
+  html.document.body.children.add(new html.Element.html("<div>PeerB Message</div>"));
+  html.document.body.children.add(new html.Element.br());
+  html.document.body.children.add(callerBMessage);
+  html.document.body.children.add(new html.Element.br());
   startButton.onClick.listen(onClickStartButton);
-  sendButton.onClick.listen(onClickSendButton);
+  sendAButton.onClick.listen(onClickSendAButton);
+  sendBButton.onClick.listen(onClickSendBButton);
 }
 
 
-void onClickSendButton(html.MouseEvent event) {
+void onClickSendAButton(html.MouseEvent event) {
   print("--clicked offer button");
   callerA.sendText("hello");
+}
+
+void onClickSendBButton(html.MouseEvent event) {
+  print("--clicked offer button");
+  callerB.sendText("hello");
 }
 
 void onClickStartButton(html.MouseEvent event) {
@@ -39,6 +58,15 @@ void onClickStartButton(html.MouseEvent event) {
   (new async.Future.delayed(new Duration(seconds:3),(){
     callerA.createOffer();
   }));
+  
+  callerA.onReceiveMessage().listen((MessageInfo info) {
+    print("#A# ${info.message}");
+    callerAMessage.appendText("${info.message}");
+  });
+  callerB.onReceiveMessage().listen((MessageInfo info) {
+    print("#B# ${info.message}");    
+    callerBMessage.appendText("${info.message}");
+  });
 }
 
 
@@ -54,7 +82,7 @@ class AdapterSignalClient extends CallerExpectSignalClient {
     //}
   }
   void onReceive(Caller caller, String to, String from, String type, String data) {
-    print("onreceive " + type + "," + data);
+    print("#####onreceive " + type + "," + data);
     super.onReceive(caller, to, from, type, data);
   }
 }
