@@ -30,28 +30,26 @@ void main() {
   html.document.body.children.add(new html.Element.br());
   html.document.body.children.add(callerBMessage);
   html.document.body.children.add(new html.Element.br());
+
+  
   startButton.onClick.listen(onClickStartButton);
-  sendAButton.onClick.listen(onClickSendAButton);
-  sendBButton.onClick.listen(onClickSendBButton);
+  sendAButton.onClick.listen((html.MouseEvent event) {
+    print("--clicked offer button");
+    callerA.sendText("hello");
+  });
+  sendBButton.onClick.listen((html.MouseEvent event) {
+    print("--clicked offer button");
+    callerB.sendText("hello");
+  });
 }
 
-
-void onClickSendAButton(html.MouseEvent event) {
-  print("--clicked offer button");
-  callerA.sendText("hello");
-}
-
-void onClickSendBButton(html.MouseEvent event) {
-  print("--clicked offer button");
-  callerB.sendText("hello");
-}
 
 void onClickStartButton(html.MouseEvent event) {
   print("--clicked offer button");
   callerA.signalclient = new AdapterSignalClient(callerB);
-  callerA.setTarget("dummy callerB");
+  callerA.targetUuid = "dummy callerB";
   callerB.signalclient = new AdapterSignalClient(callerA);
-  callerB.setTarget("dummy callerA");
+  callerB.targetUuid = "dummy callerA";
 
   callerA.connect();
   callerB.connect();
@@ -66,6 +64,12 @@ void onClickStartButton(html.MouseEvent event) {
   callerB.onReceiveMessage().listen((MessageInfo info) {
     print("#B# ${info.message}");    
     callerBMessage.appendText("${info.message}");
+  });
+  callerA.onStatusChange().listen((String s) {
+    print("callerA ${s}");
+  });
+  callerB.onStatusChange().listen((String s) {
+    print("callerB ${s}");    
   });
 }
 

@@ -62,8 +62,14 @@ class Caller {
 
   html.RtcPeerConnection _connection = null;
   html.RtcDataChannel _datachannel = null;
+
+  ///
+  /// set connection/send/receive target application uuid.
+  core.String targetUuid = "";
+
   core.String _myuuid;
-  core.String _targetuuid;
+  core.String get myUuid => _myuuid;
+
   CallerExpectSignalClient signalclient;
 
   core.Map _stuninfo = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
@@ -74,41 +80,25 @@ class Caller {
         'RtpDataChannels': true
       }]
     };
-*/   
- core.Map _mediainfo = null;//{'optional': []};
-    core.Map mediaConstraints = null;
+*/
+  core.Map mediaInfo = {'optional': []};
+  core.Map mediaConstraints = null;
   ///
   /// set application uuid;
   Caller(core.String uuid) {
     _myuuid = uuid;
   }
 
-  core.String get targetUuid => _targetuuid;
-
-  ///
-  /// set connection/send/receive target application uuid.
-  Caller setTarget(uuid) {
-    _targetuuid = uuid;
-    return this;
-  }
-
-
-  
   async.StreamController<MessageInfo> _onReceiveStreamController = new async.StreamController.broadcast();
-
-  ///
-  /// when receive message, then notified/.
-  async.Stream<MessageInfo> onReceiveMessage() {
-    return _onReceiveStreamController.stream;
-  }
-
   async.StreamController<core.String> _onStatusChangeControleler = new async.StreamController.broadcast();
 
   ///
+  /// when receive message, then notified/.
+  async.Stream<MessageInfo> onReceiveMessage() => _onReceiveStreamController.stream;
+
+  ///
   /// when status change, then notified/.
-  async.Stream<core.String> onStatusChange() {
-    return _onStatusChangeControleler.stream;
-  }
+  async.Stream<core.String> onStatusChange() => _onStatusChangeControleler.stream;
 
   ///
   /// initialize
@@ -119,8 +109,8 @@ class Caller {
   ///
   /// start to connect
   Caller connect() {
-    core.print("##[caller] connect " + _myuuid + "," + _targetuuid);
-    _connection = new html.RtcPeerConnection(_stuninfo, _mediainfo);
+    core.print("##[caller] connect " + _myuuid + "," + targetUuid);
+    _connection = new html.RtcPeerConnection(_stuninfo, mediaInfo);
     _connection.onIceCandidate.listen(_onIceCandidate);
     _connection.onDataChannel.listen(_onDataChannel);
     _connection.onAddStream.listen((html.MediaStreamEvent e) {
@@ -138,7 +128,7 @@ class Caller {
       core.print("#####[ww]#########onSignalingStateChange###" + _connection.iceConnectionState + "," + _connection.signalingState);
     });
 
-    core.Map dataConstrain = null;//{"reliable": false};
+    core.Map dataConstrain = null; //{"reliable": false};
     _datachannel = _connection.createDataChannel("message", dataConstrain);
     _datachannel.binaryType = "arraybuffer";
     _setChannelEvent(_datachannel);
@@ -149,14 +139,14 @@ class Caller {
   ///
   /// close
   void close() {
-    core.print("##[caller] close " + _myuuid + "," + _targetuuid);
+    core.print("##[caller] close " + _myuuid + "," + targetUuid);
     _connection.close();
   }
 
   ///
   /// create offer sdp.
   Caller createOffer() {
-    core.print("##[caller] createOffer " + _myuuid + "," + _targetuuid);
+    core.print("##[caller] createOffer " + _myuuid + "," + targetUuid);
     _connection.createOffer(mediaConstraints).then((html.RtcSessionDescription sdp) {
       core.print("onOffer" + sdp.sdp);
       setLocalSdp(sdp);
@@ -169,7 +159,7 @@ class Caller {
   ///
   /// create answer sdp.
   Caller createAnswer() {
-    core.print("##[caller] createAnswer " + _myuuid + "," + _targetuuid);
+    core.print("##[caller] createAnswer " + _myuuid + "," + targetUuid);
     _connection.createAnswer(mediaConstraints).then(_onAnswer).catchError((_) {
       core.print("##[error]##${_}");
       _onError("create answer");
@@ -180,17 +170,17 @@ class Caller {
   ///
   /// set remote sdp
   void setRemoteSDP(core.String type, core.String sdp) {
-    core.print("##[caller] setRemoteSdp " + _myuuid + "," + _targetuuid);
+    core.print("##[caller] setRemoteSdp " + _myuuid + "," + targetUuid);
     html.RtcSessionDescription rsd = new html.RtcSessionDescription();
     rsd.sdp = sdp;
     rsd.type = type;
     _connection.setRemoteDescription(rsd).then((_) {
       core.print(">>>");
-      core.print(">>>caller[${_myuuid}=>${_targetuuid},${type}]#setRemoteSDP OK ${_}");
+      core.print(">>>caller[${_myuuid}=>${targetUuid},${type}]#setRemoteSDP OK ${_}");
       core.print(">>>");
     }).catchError((e) {
       core.print(">>>");
-      core.print(">>>caller[${_myuuid}=>${_targetuuid},${type}]#setRemoteSDP error ${e}");
+      core.print(">>>caller[${_myuuid}=>${targetUuid},${type}]#setRemoteSDP error ${e}");
       core.print(">>>");
     });
   }
@@ -198,7 +188,7 @@ class Caller {
   ///
   /// add ice candidate
   void addIceCandidate(html.RtcIceCandidate candidate) {
-    core.print("##[caller] addIceCandidate " + _myuuid + "," + _targetuuid);
+    core.print("##[caller] addIceCandidate " + _myuuid + "," + targetUuid);
     _connection.addIceCandidate(candidate, () {
       core.print("add ice ok");
     }, (core.String e) {
@@ -218,7 +208,7 @@ class Caller {
   ///
   /// set local sdp
   void setLocalSdp(html.RtcSessionDescription description) {
-    core.print("##[caller] setLocalSdp " + _myuuid + "," + _targetuuid);
+    core.print("##[caller] setLocalSdp " + _myuuid + "," + targetUuid);
     _connection.setLocalDescription(description).then(_onSuccessLocalSdp); //.then(_onError);
   }
 
@@ -226,8 +216,8 @@ class Caller {
     if (event.candidate == null) {
       core.print("fin onIceCandidate");
     } else if (signalclient != null) {
-        core.print("---caller#send : ice");
-        signalclient.send(this, _targetuuid, _myuuid, "ice", convert.JSON.encode(IceTransfer.iceObj2Map(event.candidate)));
+      core.print("---caller#send : ice");
+      signalclient.send(this, targetUuid, _myuuid, "ice", convert.JSON.encode(IceTransfer.iceObj2Map(event.candidate)));
     }
   }
 
@@ -237,7 +227,7 @@ class Caller {
     // send answer
     if (signalclient != null) {
       core.print("---caller#send sdp : " + _connection.localDescription.type);
-      signalclient.send(this, _targetuuid, _myuuid, _connection.localDescription.type, _connection.localDescription.sdp);
+      signalclient.send(this, targetUuid, _myuuid, _connection.localDescription.type, _connection.localDescription.sdp);
     }
   }
 
@@ -259,7 +249,7 @@ class Caller {
   ///
   /// sent text message
   void sendText(core.String text) {
-    core.print("##[caller] sendText " + _myuuid + "," + _targetuuid);
+    core.print("##[caller] sendText " + _myuuid + "," + targetUuid);
     //_datachannel.sendString(text);
     core.Map pack = {};
     pack["action"] = "direct";
@@ -271,7 +261,7 @@ class Caller {
   ///
   /// send pack
   void sendPack(core.Map p) {
-    core.print("##[caller] sendPack " + _myuuid + "," + _targetuuid);
+    core.print("##[caller] sendPack " + _myuuid + "," + targetUuid);
     core.Map pack = {};
     pack["action"] = "pack";
     pack["type"] = "map";
@@ -295,9 +285,9 @@ class Caller {
 
   void _onHandleDataChannelReceiveMessage(core.Map pack) {
     if (convert.UTF8.decode(pack["type"]) == "text") {
-      _onReceiveStreamController.add(new MessageInfo(_targetuuid, "text", convert.UTF8.decode(pack["content"]), {}, this));
+      _onReceiveStreamController.add(new MessageInfo(targetUuid, "text", convert.UTF8.decode(pack["content"]), {}, this));
     } else if (convert.UTF8.decode(pack["type"]) == "map") {
-      _onReceiveStreamController.add(new MessageInfo(_targetuuid, "map", "-", pack["content"], this));
+      _onReceiveStreamController.add(new MessageInfo(targetUuid, "map", "-", pack["content"], this));
     }
   }
 
@@ -370,7 +360,8 @@ class CallerExpectSignalClient {
         core.print("##2##" + data);
         if (type == typeOffer) {
           core.print("##3## create answer");
-          caller.setTarget(from).createAnswer();
+          caller.targetUuid = from;
+          caller.createAnswer();
         }
         break;
       case typeIceCandidate:

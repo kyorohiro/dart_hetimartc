@@ -11,3 +11,7 @@ dependencies:
     git: https://github.com/kyorohiro/dart_hetimaregex
 dev_dependencies:
   test: '>=0.12.0 <0.13.0'
+transformers:
+- chrome
+- $dart2js:
+    csp: true
