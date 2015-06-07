@@ -6,9 +6,9 @@ environment:
 dependencies:
   chrome: any
   hetimacore:
-    git: https://github.com/kyorohiro/dart_hetimacore
+    git: https://github.com/kyorohiro/dart_hetimacore.git
   hetimaregex:
-    git: https://github.com/kyorohiro/dart_hetimaregex
+    git: https://github.com/kyorohiro/dart_hetimaregex.git
 dev_dependencies:
   test: '>=0.12.0 <0.13.0'
 transformers:
